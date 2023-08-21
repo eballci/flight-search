@@ -10,7 +10,7 @@ import org.mockito.quality.Strictness;
 import travel.command.FlightCreationCommand;
 import travel.exception.IdenticalDepartureAndArrivalException;
 import travel.exception.IncorrectPortNameException;
-import travel.exception.PastTimeCommandException;
+import travel.exception.PastDepartureTimeException;
 import travel.handler.CommandHandler;
 import travel.handler.FlightCreationCommandHandler;
 import travel.model.Flight;
@@ -96,7 +96,7 @@ public class FlightCreationCommandHandlerTests {
                 .currency("TL")
                 .build();
 
-        assertThrows(PastTimeCommandException.class, () -> handler.handle(command));
+        assertThrows(PastDepartureTimeException.class, () -> handler.handle(command));
 
         verify(flightPort, never()).createFlight(command);
         verify(portPort, never()).findByName(command.getDeparturePort());

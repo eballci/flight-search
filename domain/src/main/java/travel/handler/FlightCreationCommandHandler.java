@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import travel.command.FlightCreationCommand;
 import travel.exception.IdenticalDepartureAndArrivalException;
 import travel.exception.IncorrectPortNameException;
-import travel.exception.PastTimeCommandException;
+import travel.exception.PastDepartureTimeException;
 import travel.model.Flight;
 import travel.model.Port;
 import travel.port.FlightPort;
@@ -20,7 +20,7 @@ public class FlightCreationCommandHandler implements CommandHandler<Flight, Flig
     @Override
     public Flight handle(FlightCreationCommand command) {
         if (command.getDepartureTime().isBefore(LocalDateTime.now()))
-            throw new PastTimeCommandException("The departure date can not be past.");
+            throw new PastDepartureTimeException("The departure date can not be past.");
 
         if (command.getDeparturePort().compareToIgnoreCase(command.getArrivalPort()) == 0)
             throw new IdenticalDepartureAndArrivalException("The departure and arrival ports can not be identical.");

@@ -11,7 +11,7 @@ import org.mockito.quality.Strictness;
 import travel.exception.IdenticalDepartureAndArrivalException;
 import travel.exception.IncorrectPortNameException;
 import travel.exception.InvalidDateRangeException;
-import travel.exception.PastTimeQueryException;
+import travel.exception.PastDateException;
 import travel.handler.QueryHandler;
 import travel.handler.TwoWayFlightQueryHandler;
 import travel.model.Flight;
@@ -133,7 +133,7 @@ public class TwoWayFlightQueryHandlerTests {
         when(query.getReturnDate()).thenReturn(requestedReturnDate);
         when(requestedDepartureDate.isBefore(any(ChronoLocalDate.class))).thenReturn(true);
 
-        assertThrows(PastTimeQueryException.class, () -> handler.handle(query));
+        assertThrows(PastDateException.class, () -> handler.handle(query));
 
         verify(flightPort, never()).getAvailableFlights(any(OneWayFlightQuery.class));
         verify(portPort, never()).findByName(query.getDeparturePort());
@@ -152,7 +152,7 @@ public class TwoWayFlightQueryHandlerTests {
         when(query.getReturnDate()).thenReturn(requestedReturnDate);
         when(requestedReturnDate.isBefore(any(ChronoLocalDate.class))).thenReturn(true);
 
-        assertThrows(PastTimeQueryException.class, () -> handler.handle(query));
+        assertThrows(PastDateException.class, () -> handler.handle(query));
 
         verify(flightPort, never()).getAvailableFlights(any(OneWayFlightQuery.class));
         verify(portPort, never()).findByName(query.getDeparturePort());
