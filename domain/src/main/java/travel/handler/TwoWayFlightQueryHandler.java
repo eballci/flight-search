@@ -22,10 +22,10 @@ public class TwoWayFlightQueryHandler implements QueryHandler<TwoWayFlightResult
 
     @Override
     public TwoWayFlightResult handle(TwoWayFlightQuery query) {
-        if (query.getDepartureDate().isAfter(LocalDate.now()))
+        if (query.getDepartureDate().isBefore(LocalDate.now()))
             throw new PastTimeQueryException("The departure date can not be past.");
 
-        if (query.getReturnDate().isAfter(LocalDate.now()))
+        if (query.getReturnDate().isBefore(LocalDate.now()))
             throw new PastTimeQueryException("The return date can not be past.");
 
         if (query.getDepartureDate().isAfter(query.getReturnDate()))

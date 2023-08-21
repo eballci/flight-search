@@ -73,7 +73,7 @@ public class OneWayFlightQueryHandlerTests {
         when(query.getDeparturePort()).thenReturn("istanbul");
         when(query.getArrivalPort()).thenReturn("ankara");
         when(query.getDepartureDate()).thenReturn(requestedDepartureDate);
-        when(requestedDepartureDate.isAfter(any(ChronoLocalDate.class))).thenReturn(false);
+        when(requestedDepartureDate.isBefore(any(ChronoLocalDate.class))).thenReturn(false);
         when(requestedDepartureDate.isEqual(requestedDepartureDate)).thenReturn(true);
 
         OneWayFlightResult result = handler.handle(query);
@@ -96,7 +96,7 @@ public class OneWayFlightQueryHandlerTests {
         when(query.getDeparturePort()).thenReturn("istanbul");
         when(query.getArrivalPort()).thenReturn("ankara");
         when(query.getDepartureDate()).thenReturn(requestedDepartureDate);
-        when(requestedDepartureDate.isAfter(any(ChronoLocalDate.class))).thenReturn(true);
+        when(requestedDepartureDate.isBefore(any(ChronoLocalDate.class))).thenReturn(true);
 
         assertThrows(PastTimeQueryException.class, () -> handler.handle(query));
 
@@ -113,7 +113,7 @@ public class OneWayFlightQueryHandlerTests {
         when(query.getDeparturePort()).thenReturn("does-not-exist");
         when(query.getArrivalPort()).thenReturn("ankara");
         when(query.getDepartureDate()).thenReturn(requestedDepartureDate);
-        when(requestedDepartureDate.isAfter(any(ChronoLocalDate.class))).thenReturn(false);
+        when(requestedDepartureDate.isBefore(any(ChronoLocalDate.class))).thenReturn(false);
 
         assertThrows(IncorrectPortNameException.class, () -> handler.handle(query));
 
@@ -129,7 +129,7 @@ public class OneWayFlightQueryHandlerTests {
         when(query.getDeparturePort()).thenReturn("istanbul");
         when(query.getArrivalPort()).thenReturn("does-not-exist");
         when(query.getDepartureDate()).thenReturn(requestedDepartureDate);
-        when(requestedDepartureDate.isAfter(any(ChronoLocalDate.class))).thenReturn(false);
+        when(requestedDepartureDate.isBefore(any(ChronoLocalDate.class))).thenReturn(false);
 
         assertThrows(IncorrectPortNameException.class, () -> handler.handle(query));
 

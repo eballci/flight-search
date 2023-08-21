@@ -97,8 +97,8 @@ public class TwoWayFlightQueryHandlerTests {
         when(query.getArrivalPort()).thenReturn("ankara");
         when(query.getDepartureDate()).thenReturn(requestedDepartureDate);
         when(query.getReturnDate()).thenReturn(requestedReturnDate);
-        when(requestedDepartureDate.isAfter(any(ChronoLocalDate.class))).thenReturn(false);
-        when(requestedReturnDate.isAfter(any(ChronoLocalDate.class))).thenReturn(false);
+        when(requestedDepartureDate.isBefore(any(ChronoLocalDate.class))).thenReturn(false);
+        when(requestedReturnDate.isBefore(any(ChronoLocalDate.class))).thenReturn(false);
         when(requestedDepartureDate.isEqual(requestedDepartureDate)).thenReturn(true);
         when(requestedReturnDate.isEqual(requestedReturnDate)).thenReturn(true);
         when(requestedDepartureDate.isAfter(requestedReturnDate)).thenReturn(false);
@@ -130,7 +130,7 @@ public class TwoWayFlightQueryHandlerTests {
         when(query.getArrivalPort()).thenReturn("ankara");
         when(query.getDepartureDate()).thenReturn(requestedDepartureDate);
         when(query.getReturnDate()).thenReturn(requestedReturnDate);
-        when(requestedDepartureDate.isAfter(any(ChronoLocalDate.class))).thenReturn(true);
+        when(requestedDepartureDate.isBefore(any(ChronoLocalDate.class))).thenReturn(true);
 
         assertThrows(PastTimeQueryException.class, () -> handler.handle(query));
 
@@ -149,7 +149,7 @@ public class TwoWayFlightQueryHandlerTests {
         when(query.getArrivalPort()).thenReturn("ankara");
         when(query.getDepartureDate()).thenReturn(requestedDepartureDate);
         when(query.getReturnDate()).thenReturn(requestedReturnDate);
-        when(requestedReturnDate.isAfter(any(ChronoLocalDate.class))).thenReturn(true);
+        when(requestedReturnDate.isBefore(any(ChronoLocalDate.class))).thenReturn(true);
 
         assertThrows(PastTimeQueryException.class, () -> handler.handle(query));
 
@@ -187,8 +187,8 @@ public class TwoWayFlightQueryHandlerTests {
         when(query.getArrivalPort()).thenReturn("ankara");
         when(query.getDepartureDate()).thenReturn(requestedDepartureDate);
         when(query.getReturnDate()).thenReturn(requestedReturnDate);
-        when(requestedDepartureDate.isAfter(any(ChronoLocalDate.class))).thenReturn(false);
-        when(requestedReturnDate.isAfter(any(ChronoLocalDate.class))).thenReturn(false);
+        when(requestedDepartureDate.isBefore(any(ChronoLocalDate.class))).thenReturn(false);
+        when(requestedReturnDate.isBefore(any(ChronoLocalDate.class))).thenReturn(false);
         when(requestedDepartureDate.isEqual(requestedDepartureDate)).thenReturn(true);
         when(requestedReturnDate.isEqual(requestedReturnDate)).thenReturn(true);
         when(requestedDepartureDate.isAfter(requestedReturnDate)).thenReturn(false);
@@ -210,8 +210,8 @@ public class TwoWayFlightQueryHandlerTests {
         when(query.getArrivalPort()).thenReturn("does-not-exist");
         when(query.getDepartureDate()).thenReturn(requestedDepartureDate);
         when(query.getReturnDate()).thenReturn(requestedReturnDate);
-        when(requestedDepartureDate.isAfter(any(ChronoLocalDate.class))).thenReturn(false);
-        when(requestedReturnDate.isAfter(any(ChronoLocalDate.class))).thenReturn(false);
+        when(requestedDepartureDate.isBefore(any(ChronoLocalDate.class))).thenReturn(false);
+        when(requestedReturnDate.isBefore(any(ChronoLocalDate.class))).thenReturn(false);
         when(requestedDepartureDate.isEqual(requestedDepartureDate)).thenReturn(true);
         when(requestedReturnDate.isEqual(requestedReturnDate)).thenReturn(true);
         when(requestedDepartureDate.isAfter(requestedReturnDate)).thenReturn(false);

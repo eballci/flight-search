@@ -20,7 +20,7 @@ public class OneWayFlightQueryHandler implements QueryHandler<OneWayFlightResult
 
     @Override
     public OneWayFlightResult handle(OneWayFlightQuery query) {
-        if (query.getDepartureDate().isAfter(LocalDate.now()))
+        if (query.getDepartureDate().isBefore(LocalDate.now()))
             throw new PastTimeQueryException("The departure date can not be past.");
 
         Port departure = portPort.findByName(query.getDeparturePort());
