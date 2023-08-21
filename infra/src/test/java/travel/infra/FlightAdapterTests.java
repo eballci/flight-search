@@ -81,6 +81,7 @@ public class FlightAdapterTests {
 
         var first = adapter.getAvailableFlights(query).get(0);
 
+        //TODO: make it better
         verify(flightRepository)
                 .findAllByOneWayQuery(anyString(), anyString(), any(LocalDateTime.class), any(LocalDateTime.class));
         Assertions.assertEquals(first.getDeparture().getName(), "istanbul");

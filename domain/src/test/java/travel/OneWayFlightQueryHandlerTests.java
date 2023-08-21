@@ -20,8 +20,6 @@ import travel.query.OneWayFlightQuery;
 import travel.result.OneWayFlightResult;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.chrono.ChronoLocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -51,7 +49,6 @@ public class OneWayFlightQueryHandlerTests {
                 .id(UUID.randomUUID())
                 .departure(istanbul)
                 .arrival(ankara)
-                .departureTime(LocalDateTime.of(2023, 8, 20, 1, 1, 1))
                 .amount(199.99)
                 .currency("TL")
                 .build();
@@ -61,21 +58,28 @@ public class OneWayFlightQueryHandlerTests {
         this.flightPort = flightPort;
         this.portPort = portPort;
         handler = new OneWayFlightQueryHandler(flightPort, portPort);
-        when(flightPort.getAvailableFlights(any(OneWayFlightQuery.class))).thenReturn(flights);
         when(portPort.findByName("istanbul")).thenReturn(istanbul);
         when(portPort.findByName("ankara")).thenReturn(ankara);
+        when(flightPort.getAvailableFlights(any(OneWayFlightQuery.class)))
+                .thenAnswer(invocation -> {
+                    OneWayFlightQuery query = invocation.getArgument(0);
+
+                    flights.forEach(f -> {
+                        f.setDepartureTime(query.getDepartureDate().atTime(21, 11, 10));
+                    });
+
+                    return flights;
+                });
     }
 
     @Test
     void givenAllOneWayFlights_whenQueryPassed() {
-        LocalDate requestedDepartureDate = mock(LocalDate.class);
+        LocalDate requestedDepartureDate = LocalDate.now().plusDays(10);
         OneWayFlightQuery query = mock(OneWayFlightQuery.class);
 
         when(query.getDeparturePort()).thenReturn("istanbul");
         when(query.getArrivalPort()).thenReturn("ankara");
         when(query.getDepartureDate()).thenReturn(requestedDepartureDate);
-        when(requestedDepartureDate.isBefore(any(ChronoLocalDate.class))).thenReturn(false);
-        when(requestedDepartureDate.isEqual(requestedDepartureDate)).thenReturn(true);
 
         OneWayFlightResult result = handler.handle(query);
 
@@ -91,13 +95,12 @@ public class OneWayFlightQueryHandlerTests {
 
     @Test
     void throwsPastTimeQueryException_whenDepartureDatePast() {
-        LocalDate requestedDepartureDate = mock(LocalDate.class);
+        LocalDate requestedDepartureDate = LocalDate.now().minusDays(10);
         OneWayFlightQuery query = mock(OneWayFlightQuery.class);
 
         when(query.getDeparturePort()).thenReturn("istanbul");
         when(query.getArrivalPort()).thenReturn("ankara");
         when(query.getDepartureDate()).thenReturn(requestedDepartureDate);
-        when(requestedDepartureDate.isBefore(any(ChronoLocalDate.class))).thenReturn(true);
 
         assertThrows(PastDateException.class, () -> handler.handle(query));
 
@@ -108,13 +111,12 @@ public class OneWayFlightQueryHandlerTests {
 
     @Test
     void throwsIncorrectPortNameException_whenDeparturePortNameDoesNotPointAny() {
-        LocalDate requestedDepartureDate = mock(LocalDate.class);
+        LocalDate requestedDepartureDate = LocalDate.now().plusDays(10);
         OneWayFlightQuery query = mock(OneWayFlightQuery.class);
 
         when(query.getDeparturePort()).thenReturn("does-not-exist");
         when(query.getArrivalPort()).thenReturn("ankara");
         when(query.getDepartureDate()).thenReturn(requestedDepartureDate);
-        when(requestedDepartureDate.isBefore(any(ChronoLocalDate.class))).thenReturn(false);
 
         assertThrows(IncorrectPortNameException.class, () -> handler.handle(query));
 
@@ -124,13 +126,12 @@ public class OneWayFlightQueryHandlerTests {
 
     @Test
     void throwsIncorrectPortNameException_whenArrivalPortNameDoesNotPointAny() {
-        LocalDate requestedDepartureDate = mock(LocalDate.class);
+        LocalDate requestedDepartureDate = LocalDate.now().plusDays(10);
         OneWayFlightQuery query = mock(OneWayFlightQuery.class);
 
         when(query.getDeparturePort()).thenReturn("istanbul");
         when(query.getArrivalPort()).thenReturn("does-not-exist");
         when(query.getDepartureDate()).thenReturn(requestedDepartureDate);
-        when(requestedDepartureDate.isBefore(any(ChronoLocalDate.class))).thenReturn(false);
 
         assertThrows(IncorrectPortNameException.class, () -> handler.handle(query));
 
@@ -140,13 +141,12 @@ public class OneWayFlightQueryHandlerTests {
 
     @Test
     void throwsIdenticalDepartureAndArrivalException_whenDepartureAndArrivalSame() {
-        LocalDate requestedDepartureDate = mock(LocalDate.class);
+        LocalDate requestedDepartureDate = LocalDate.now().plusDays(10);
         OneWayFlightQuery query = mock(OneWayFlightQuery.class);
 
         when(query.getDeparturePort()).thenReturn("ankara");
         when(query.getArrivalPort()).thenReturn("ankara");
         when(query.getDepartureDate()).thenReturn(requestedDepartureDate);
-        when(requestedDepartureDate.isBefore(any(ChronoLocalDate.class))).thenReturn(false);
 
         assertThrows(IdenticalDepartureAndArrivalException.class, () -> handler.handle(query));
 

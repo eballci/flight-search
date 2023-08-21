@@ -3,7 +3,6 @@ package travel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
@@ -23,8 +22,6 @@ import travel.query.TwoWayFlightQuery;
 import travel.result.TwoWayFlightResult;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.chrono.ChronoLocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -56,7 +53,6 @@ public class TwoWayFlightQueryHandlerTests {
                 .id(UUID.randomUUID())
                 .departure(istanbul)
                 .arrival(ankara)
-                .departureTime(LocalDateTime.of(2023, 8, 20, 1, 1, 1))
                 .amount(199.99)
                 .currency("TL")
                 .build();
@@ -64,7 +60,6 @@ public class TwoWayFlightQueryHandlerTests {
                 .id(UUID.randomUUID())
                 .departure(ankara)
                 .arrival(istanbul)
-                .departureTime(LocalDateTime.of(2023, 8, 23, 1, 1, 1))
                 .amount(299.99)
                 .currency("TL")
                 .build();
@@ -75,9 +70,16 @@ public class TwoWayFlightQueryHandlerTests {
         this.flightPort = flightPort;
         this.portPort = portPort;
         handler = new TwoWayFlightQueryHandler(flightPort, portPort);
-        when(flightPort.getAvailableFlights(ArgumentMatchers.any(OneWayFlightQuery.class)))
+        when(flightPort.getAvailableFlights(any(OneWayFlightQuery.class)))
                 .thenAnswer(invocation -> {
                     OneWayFlightQuery query = invocation.getArgument(0);
+
+                    departureFlights.forEach(flight -> {
+                        flight.setDepartureTime(query.getDepartureDate().atTime(21, 11, 10));
+                    });
+                    returnFlights.forEach(flight -> {
+                        flight.setDepartureTime(query.getDepartureDate().atTime(21, 11, 10));
+                    });
                     if (query.getDeparturePort().compareTo(departureFlight.getDeparture().getName()) == 0) {
                         return departureFlights;
                     } else {
@@ -90,20 +92,14 @@ public class TwoWayFlightQueryHandlerTests {
 
     @Test
     void givenAllTwoWayFlights_whenQueryPassed() {
-        LocalDate requestedDepartureDate = mock(LocalDate.class);
-        LocalDate requestedReturnDate = mock(LocalDate.class);
+        LocalDate requestedDepartureDate = LocalDate.now().plusDays(1);
+        LocalDate requestedReturnDate = LocalDate.now().plusDays(2);
         TwoWayFlightQuery query = mock(TwoWayFlightQuery.class);
 
         when(query.getDeparturePort()).thenReturn("istanbul");
         when(query.getArrivalPort()).thenReturn("ankara");
         when(query.getDepartureDate()).thenReturn(requestedDepartureDate);
         when(query.getReturnDate()).thenReturn(requestedReturnDate);
-        when(requestedDepartureDate.isBefore(any(ChronoLocalDate.class))).thenReturn(false);
-        when(requestedReturnDate.isBefore(any(ChronoLocalDate.class))).thenReturn(false);
-        when(requestedDepartureDate.isEqual(requestedDepartureDate)).thenReturn(true);
-        when(requestedReturnDate.isEqual(requestedReturnDate)).thenReturn(true);
-        when(requestedDepartureDate.isAfter(requestedReturnDate)).thenReturn(false);
-        when(requestedReturnDate.isBefore(requestedDepartureDate)).thenReturn(false);
 
         TwoWayFlightResult result = handler.handle(query);
 
@@ -123,15 +119,14 @@ public class TwoWayFlightQueryHandlerTests {
 
     @Test
     void throwsPastTimeQueryException_whenDepartureDatePast() {
-        LocalDate requestedDepartureDate = mock(LocalDate.class);
-        LocalDate requestedReturnDate = mock(LocalDate.class);
+        LocalDate requestedDepartureDate = LocalDate.now().minusDays(1);
+        LocalDate requestedReturnDate = LocalDate.now().plusDays(2);
         TwoWayFlightQuery query = mock(TwoWayFlightQuery.class);
 
         when(query.getDeparturePort()).thenReturn("istanbul");
         when(query.getArrivalPort()).thenReturn("ankara");
         when(query.getDepartureDate()).thenReturn(requestedDepartureDate);
         when(query.getReturnDate()).thenReturn(requestedReturnDate);
-        when(requestedDepartureDate.isBefore(any(ChronoLocalDate.class))).thenReturn(true);
 
         assertThrows(PastDateException.class, () -> handler.handle(query));
 
@@ -142,15 +137,14 @@ public class TwoWayFlightQueryHandlerTests {
 
     @Test
     void throwsPastTimeQueryException_whenReturnDatePast() {
-        LocalDate requestedDepartureDate = mock(LocalDate.class);
-        LocalDate requestedReturnDate = mock(LocalDate.class);
+        LocalDate requestedDepartureDate = LocalDate.now().plusDays(1);
+        LocalDate requestedReturnDate = LocalDate.now().minusDays(2);
         TwoWayFlightQuery query = mock(TwoWayFlightQuery.class);
 
         when(query.getDeparturePort()).thenReturn("istanbul");
         when(query.getArrivalPort()).thenReturn("ankara");
         when(query.getDepartureDate()).thenReturn(requestedDepartureDate);
         when(query.getReturnDate()).thenReturn(requestedReturnDate);
-        when(requestedReturnDate.isBefore(any(ChronoLocalDate.class))).thenReturn(true);
 
         assertThrows(PastDateException.class, () -> handler.handle(query));
 
@@ -161,15 +155,14 @@ public class TwoWayFlightQueryHandlerTests {
 
     @Test
     void throwsPastTimeQueryException_whenReturnDateEarlierFromDepartureDate() {
-        LocalDate requestedDepartureDate = mock(LocalDate.class);
-        LocalDate requestedReturnDate = mock(LocalDate.class);
+        LocalDate requestedDepartureDate = LocalDate.now().plusDays(3);
+        LocalDate requestedReturnDate = LocalDate.now().plusDays(2);
         TwoWayFlightQuery query = mock(TwoWayFlightQuery.class);
 
         when(query.getDeparturePort()).thenReturn("istanbul");
         when(query.getArrivalPort()).thenReturn("ankara");
         when(query.getDepartureDate()).thenReturn(requestedDepartureDate);
         when(query.getReturnDate()).thenReturn(requestedReturnDate);
-        when(requestedDepartureDate.isAfter(requestedReturnDate)).thenReturn(true);
 
         assertThrows(InvalidDateRangeException.class, () -> handler.handle(query));
 
@@ -180,20 +173,14 @@ public class TwoWayFlightQueryHandlerTests {
 
     @Test
     void throwsIncorrectPortNameException_whenDeparturePortNameDoesNotPointAny() {
-        LocalDate requestedDepartureDate = mock(LocalDate.class);
-        LocalDate requestedReturnDate = mock(LocalDate.class);
+        LocalDate requestedDepartureDate = LocalDate.now().plusDays(1);
+        LocalDate requestedReturnDate = LocalDate.now().plusDays(2);
         TwoWayFlightQuery query = mock(TwoWayFlightQuery.class);
 
         when(query.getDeparturePort()).thenReturn("does-not-exist");
         when(query.getArrivalPort()).thenReturn("ankara");
         when(query.getDepartureDate()).thenReturn(requestedDepartureDate);
         when(query.getReturnDate()).thenReturn(requestedReturnDate);
-        when(requestedDepartureDate.isBefore(any(ChronoLocalDate.class))).thenReturn(false);
-        when(requestedReturnDate.isBefore(any(ChronoLocalDate.class))).thenReturn(false);
-        when(requestedDepartureDate.isEqual(requestedDepartureDate)).thenReturn(true);
-        when(requestedReturnDate.isEqual(requestedReturnDate)).thenReturn(true);
-        when(requestedDepartureDate.isAfter(requestedReturnDate)).thenReturn(false);
-        when(requestedReturnDate.isBefore(requestedDepartureDate)).thenReturn(false);
 
         assertThrows(IncorrectPortNameException.class, () -> handler.handle(query));
 
@@ -203,20 +190,14 @@ public class TwoWayFlightQueryHandlerTests {
 
     @Test
     void throwsIncorrectPortNameException_whenArrivalPortNameDoesNotPointAny() {
-        LocalDate requestedDepartureDate = mock(LocalDate.class);
-        LocalDate requestedReturnDate = mock(LocalDate.class);
+        LocalDate requestedDepartureDate = LocalDate.now().plusDays(1);
+        LocalDate requestedReturnDate = LocalDate.now().plusDays(2);
         TwoWayFlightQuery query = mock(TwoWayFlightQuery.class);
 
         when(query.getDeparturePort()).thenReturn("istanbul");
         when(query.getArrivalPort()).thenReturn("does-not-exist");
         when(query.getDepartureDate()).thenReturn(requestedDepartureDate);
         when(query.getReturnDate()).thenReturn(requestedReturnDate);
-        when(requestedDepartureDate.isBefore(any(ChronoLocalDate.class))).thenReturn(false);
-        when(requestedReturnDate.isBefore(any(ChronoLocalDate.class))).thenReturn(false);
-        when(requestedDepartureDate.isEqual(requestedDepartureDate)).thenReturn(true);
-        when(requestedReturnDate.isEqual(requestedReturnDate)).thenReturn(true);
-        when(requestedDepartureDate.isAfter(requestedReturnDate)).thenReturn(false);
-        when(requestedReturnDate.isBefore(requestedDepartureDate)).thenReturn(false);
 
         assertThrows(IncorrectPortNameException.class, () -> handler.handle(query));
 
@@ -226,20 +207,14 @@ public class TwoWayFlightQueryHandlerTests {
 
     @Test
     void throwsIdenticalDepartureAndArrivalException_whenDepartureAndArrivalSame() {
-        LocalDate requestedDepartureDate = mock(LocalDate.class);
-        LocalDate requestedReturnDate = mock(LocalDate.class);
+        LocalDate requestedDepartureDate = LocalDate.now().plusDays(1);
+        LocalDate requestedReturnDate = LocalDate.now().plusDays(2);
         TwoWayFlightQuery query = mock(TwoWayFlightQuery.class);
 
         when(query.getDeparturePort()).thenReturn("istanbul");
         when(query.getArrivalPort()).thenReturn("istanbul");
         when(query.getDepartureDate()).thenReturn(requestedDepartureDate);
         when(query.getReturnDate()).thenReturn(requestedReturnDate);
-        when(requestedDepartureDate.isBefore(any(ChronoLocalDate.class))).thenReturn(false);
-        when(requestedReturnDate.isBefore(any(ChronoLocalDate.class))).thenReturn(false);
-        when(requestedDepartureDate.isEqual(requestedDepartureDate)).thenReturn(true);
-        when(requestedReturnDate.isEqual(requestedReturnDate)).thenReturn(true);
-        when(requestedDepartureDate.isAfter(requestedReturnDate)).thenReturn(false);
-        when(requestedReturnDate.isBefore(requestedDepartureDate)).thenReturn(false);
 
         assertThrows(IdenticalDepartureAndArrivalException.class, () -> handler.handle(query));
 
