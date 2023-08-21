@@ -1,6 +1,7 @@
 package travel.handler;
 
 import lombok.RequiredArgsConstructor;
+import travel.exception.IdenticalDepartureAndArrivalException;
 import travel.exception.IncorrectPortNameException;
 import travel.exception.PastTimeQueryException;
 import travel.model.Flight;
@@ -22,6 +23,9 @@ public class OneWayFlightQueryHandler implements QueryHandler<OneWayFlightResult
     public OneWayFlightResult handle(OneWayFlightQuery query) {
         if (query.getDepartureDate().isBefore(LocalDate.now()))
             throw new PastTimeQueryException("The departure date can not be past.");
+
+        if (query.getDeparturePort().compareToIgnoreCase(query.getArrivalPort()) == 0)
+            throw new IdenticalDepartureAndArrivalException("The departure and arrival ports can not be identical.");
 
         Port departure = portPort.findByName(query.getDeparturePort());
         Port arrival = portPort.findByName(query.getArrivalPort());

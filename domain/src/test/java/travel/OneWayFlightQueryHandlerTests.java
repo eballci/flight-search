@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import travel.exception.IdenticalDepartureAndArrivalException;
 import travel.exception.IncorrectPortNameException;
 import travel.exception.PastTimeQueryException;
 import travel.handler.OneWayFlightQueryHandler;
@@ -135,5 +136,21 @@ public class OneWayFlightQueryHandlerTests {
 
         verify(portPort).findByName(query.getDeparturePort());
         verify(portPort).findByName(query.getArrivalPort());
+    }
+
+    @Test
+    void throwsIdenticalDepartureAndArrivalException_whenDepartureAndArrivalSame() {
+        LocalDate requestedDepartureDate = mock(LocalDate.class);
+        OneWayFlightQuery query = mock(OneWayFlightQuery.class);
+
+        when(query.getDeparturePort()).thenReturn("ankara");
+        when(query.getArrivalPort()).thenReturn("ankara");
+        when(query.getDepartureDate()).thenReturn(requestedDepartureDate);
+        when(requestedDepartureDate.isBefore(any(ChronoLocalDate.class))).thenReturn(false);
+
+        assertThrows(IdenticalDepartureAndArrivalException.class, () -> handler.handle(query));
+
+        verify(portPort, never()).findByName(query.getDeparturePort());
+        verify(portPort, never()).findByName(query.getArrivalPort());
     }
 }

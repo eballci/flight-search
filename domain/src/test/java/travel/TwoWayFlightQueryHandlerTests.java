@@ -8,6 +8,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import travel.exception.IdenticalDepartureAndArrivalException;
 import travel.exception.IncorrectPortNameException;
 import travel.exception.InvalidDateRangeException;
 import travel.exception.PastTimeQueryException;
@@ -221,5 +222,28 @@ public class TwoWayFlightQueryHandlerTests {
 
         verify(portPort).findByName(query.getDeparturePort());
         verify(portPort).findByName(query.getArrivalPort());
+    }
+
+    @Test
+    void throwsIdenticalDepartureAndArrivalException_whenDepartureAndArrivalSame() {
+        LocalDate requestedDepartureDate = mock(LocalDate.class);
+        LocalDate requestedReturnDate = mock(LocalDate.class);
+        TwoWayFlightQuery query = mock(TwoWayFlightQuery.class);
+
+        when(query.getDeparturePort()).thenReturn("istanbul");
+        when(query.getArrivalPort()).thenReturn("istanbul");
+        when(query.getDepartureDate()).thenReturn(requestedDepartureDate);
+        when(query.getReturnDate()).thenReturn(requestedReturnDate);
+        when(requestedDepartureDate.isBefore(any(ChronoLocalDate.class))).thenReturn(false);
+        when(requestedReturnDate.isBefore(any(ChronoLocalDate.class))).thenReturn(false);
+        when(requestedDepartureDate.isEqual(requestedDepartureDate)).thenReturn(true);
+        when(requestedReturnDate.isEqual(requestedReturnDate)).thenReturn(true);
+        when(requestedDepartureDate.isAfter(requestedReturnDate)).thenReturn(false);
+        when(requestedReturnDate.isBefore(requestedDepartureDate)).thenReturn(false);
+
+        assertThrows(IdenticalDepartureAndArrivalException.class, () -> handler.handle(query));
+
+        verify(portPort, never()).findByName(query.getDeparturePort());
+        verify(portPort, never()).findByName(query.getArrivalPort());
     }
 }

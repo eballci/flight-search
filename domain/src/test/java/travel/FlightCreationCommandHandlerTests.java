@@ -8,6 +8,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import travel.command.FlightCreationCommand;
+import travel.exception.IdenticalDepartureAndArrivalException;
 import travel.exception.IncorrectPortNameException;
 import travel.exception.PastTimeCommandException;
 import travel.handler.CommandHandler;
@@ -134,5 +135,22 @@ public class FlightCreationCommandHandlerTests {
 
         verify(portPort).findByName(command.getDeparturePort());
         verify(portPort).findByName(command.getArrivalPort());
+    }
+
+    @Test
+    void throwsIdenticalDepartureAndArrivalException_whenDepartureAndArrivalSame() {
+        LocalDateTime departureTime = LocalDateTime.now().plusDays(10);
+        var command = FlightCreationCommand.builder()
+                .departurePort("istanbul")
+                .arrivalPort("istanbul")
+                .departureTime(departureTime)
+                .amount(189.90)
+                .currency("TL")
+                .build();
+
+        assertThrows(IdenticalDepartureAndArrivalException.class, () -> handler.handle(command));
+
+        verify(portPort, never()).findByName(command.getDeparturePort());
+        verify(portPort, never()).findByName(command.getArrivalPort());
     }
 }

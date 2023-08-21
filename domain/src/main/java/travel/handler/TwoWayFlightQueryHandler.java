@@ -1,6 +1,7 @@
 package travel.handler;
 
 import lombok.RequiredArgsConstructor;
+import travel.exception.IdenticalDepartureAndArrivalException;
 import travel.exception.IncorrectPortNameException;
 import travel.exception.InvalidDateRangeException;
 import travel.exception.PastTimeQueryException;
@@ -30,6 +31,9 @@ public class TwoWayFlightQueryHandler implements QueryHandler<TwoWayFlightResult
 
         if (query.getDepartureDate().isAfter(query.getReturnDate()))
             throw new InvalidDateRangeException("Return date cannot be earlier than departure date.");
+
+        if (query.getDeparturePort().compareToIgnoreCase(query.getArrivalPort()) == 0)
+            throw new IdenticalDepartureAndArrivalException("The departure and arrival ports can not be identical.");
 
         Port departure = portPort.findByName(query.getDeparturePort());
         Port arrival = portPort.findByName(query.getArrivalPort());
