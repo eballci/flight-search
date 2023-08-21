@@ -3,6 +3,7 @@ package travel.infra.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.springframework.data.domain.Persistable;
+import travel.model.Port;
 
 import java.util.UUID;
 
@@ -20,5 +21,12 @@ public class PortEntity implements Persistable<UUID> {
     @Override
     public boolean isNew() {
         return id == null;
+    }
+
+    public Port toModel() {
+        return Port.builder()
+                .id(id)
+                .name(name)
+                .build();
     }
 }
