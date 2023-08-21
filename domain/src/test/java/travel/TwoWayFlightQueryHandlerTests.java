@@ -74,12 +74,9 @@ public class TwoWayFlightQueryHandlerTests {
                 .thenAnswer(invocation -> {
                     OneWayFlightQuery query = invocation.getArgument(0);
 
-                    departureFlights.forEach(flight -> {
-                        flight.setDepartureTime(query.getDepartureDate().atTime(21, 11, 10));
-                    });
-                    returnFlights.forEach(flight -> {
-                        flight.setDepartureTime(query.getDepartureDate().atTime(21, 11, 10));
-                    });
+                    departureFlights.forEach(flight -> flight.setDepartureTime(query.getDepartureDate().atTime(21, 11, 10)));
+                    returnFlights.forEach(flight -> flight.setDepartureTime(query.getDepartureDate().atTime(21, 11, 10)));
+
                     if (query.getDeparturePort().compareTo(departureFlight.getDeparture().getName()) == 0) {
                         return departureFlights;
                     } else {

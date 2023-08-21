@@ -64,9 +64,7 @@ public class OneWayFlightQueryHandlerTests {
                 .thenAnswer(invocation -> {
                     OneWayFlightQuery query = invocation.getArgument(0);
 
-                    flights.forEach(f -> {
-                        f.setDepartureTime(query.getDepartureDate().atTime(21, 11, 10));
-                    });
+                    flights.forEach(f -> f.setDepartureTime(query.getDepartureDate().atTime(21, 11, 10)));
 
                     return flights;
                 });

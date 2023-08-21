@@ -46,7 +46,6 @@ public class FlightAdapterTests {
         var istanbul = new PortEntity();
         var ankara = new PortEntity();
         var entity = new FlightEntity();
-        var departureTime = LocalDateTime.now().plusDays(10);
 
         istanbul.setId(UUID.randomUUID());
         istanbul.setName("istanbul");
@@ -55,7 +54,6 @@ public class FlightAdapterTests {
         entity.setId(UUID.randomUUID());
         entity.setDeparture(istanbul);
         entity.setArrival(ankara);
-        entity.setDepartureTime(LocalDateTime.now().plusDays(10));
         entity.setAmount(199.9);
         entity.setCurrency("TL");
         flightEntities.add(entity);
