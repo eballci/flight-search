@@ -19,12 +19,12 @@ import travel.query.OneWayFlightQuery;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -54,6 +54,7 @@ public class FlightAdapterTests {
         entity.setId(UUID.randomUUID());
         entity.setDeparture(istanbul);
         entity.setArrival(ankara);
+        entity.setDepartureTime(LocalDateTime.now().plusDays(2));
         entity.setAmount(199.9);
         entity.setCurrency("TL");
         flightEntities.add(entity);
@@ -64,7 +65,14 @@ public class FlightAdapterTests {
                 anyString(),
                 any(LocalDateTime.class),
                 any(LocalDateTime.class))).thenReturn(flightEntities);
-        when(flightRepository.save(any(FlightEntity.class))).thenReturn(entity);
+        when(flightRepository.save(any(FlightEntity.class)))
+                .thenAnswer(invocation -> {
+                    FlightEntity flightEntity = invocation.getArgument(0);
+
+                    entity.setDepartureTime(flightEntity.getDepartureTime());
+
+                    return entity;
+                });
         when(portRepository.findByName("istanbul")).thenReturn(istanbul);
         when(portRepository.findByName("ankara")).thenReturn(ankara);
     }
@@ -79,9 +87,12 @@ public class FlightAdapterTests {
 
         var first = adapter.getAvailableFlights(query).get(0);
 
-        //TODO: make it better
-        verify(flightRepository)
-                .findAllByOneWayQuery(anyString(), anyString(), any(LocalDateTime.class), any(LocalDateTime.class));
+        verify(flightRepository).findAllByOneWayQuery(
+                eq(query.getDeparturePort()),
+                eq(query.getArrivalPort()),
+                eq(LocalDateTime.of(query.getDepartureDate(), LocalTime.MIDNIGHT)),
+                eq(query.getDepartureDate().atTime(LocalTime.MAX))
+        );
         Assertions.assertEquals(first.getDeparture().getName(), "istanbul");
         Assertions.assertEquals(first.getArrival().getName(), "ankara");
         Assertions.assertTrue(first.getDepartureTime().isEqual(flightEntities.get(0).getDepartureTime()));

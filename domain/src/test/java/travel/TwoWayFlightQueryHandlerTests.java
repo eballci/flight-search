@@ -100,8 +100,16 @@ public class TwoWayFlightQueryHandlerTests {
 
         TwoWayFlightResult result = handler.handle(query);
 
-        verify(flightPort, times(2))
-                .getAvailableFlights(any(OneWayFlightQuery.class));
+        verify(flightPort).getAvailableFlights(eq(OneWayFlightQuery.builder()
+                .departurePort(query.getDeparturePort())
+                .arrivalPort(query.getArrivalPort())
+                .departureDate(query.getDepartureDate())
+                .build()));
+        verify(flightPort).getAvailableFlights(eq(OneWayFlightQuery.builder()
+                .departurePort(query.getArrivalPort())
+                .arrivalPort(query.getDeparturePort())
+                .departureDate(query.getReturnDate())
+                .build()));
         verify(portPort).findByName(query.getDeparturePort());
         verify(portPort).findByName(query.getArrivalPort());
         assertEquals(result.getDeparture(), istanbul);
